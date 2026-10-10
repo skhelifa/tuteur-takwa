@@ -13,7 +13,7 @@ st.caption(
     "Ton assistant personnel pour les maths au Collège Louis-Riel (IMAP20S)"
 )
 
-# Initialisation du client OpenAI (récupère la clé depuis les secrets Streamlit ou l'environnement)
+# Récupération de la clé API OpenAI depuis les secrets Streamlit
 api_key = st.secrets.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
 
 if not api_key:
@@ -22,9 +22,10 @@ if not api_key:
     )
     st.stop()
 
+# Initialisation du client OpenAI
 client = OpenAI(api_key=api_key)
 
-# Instructions système (System Prompt) intégrant le Collège Louis-Riel et la trigonométrie
+# Instructions système (System Prompt)
 SYSTEM_PROMPT = """
 Tu agis en tant qu'expert pédagogique en mathématiques et tuteur socratique pour le programme francophone du Manitoba (au Collège Louis-Riel, cours IMAP20S / 10e année). 
 Ton rôle est d'aider l'élève à progresser en trigonométrie et dans les concepts de ce niveau en t'appuyant sur les programmes officiels d'Éducation Manitoba.
@@ -38,7 +39,7 @@ Ton rôle est d'aider l'élève à progresser en trigonométrie et dans les conc
   4. Sois chaleureux, encourageant, clair, pédagogue et réponds toujours en français.
 """
 
-# Initialisation de l'historique des messages dans la session Streamlit
+# Initialisation de l'historique des messages
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -48,7 +49,7 @@ if "messages" not in st.session_state:
         },
     ]
 
-# Affichage de l'historique des messages
+# Affichage de l'historique
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
@@ -76,4 +77,15 @@ if user_input := st.chat_input(
                     {"role": "assistant", "content": assistant_reply}
                 )
             except Exception as e:
-                st.error(f"Une erreur est survenue lors de la communication avec l'IA : {e}")
+                st.error(f"Une erreur est survenue : {e}")
+
+# --- SIGNATURE DU PAPA ---
+st.markdown(
+    """
+    <hr style="margin-top: 50px; margin-bottom: 10px; border: 0; border-top: 1px solid #eaeaea;">
+    <div style="text-align: right; font-size: 0.85em; color: #888888; font-style: italic;">
+        Fait sur mesure par ton papa adoré — Parce que tu vaux l'infini ✨
+    </div>
+""",
+    unsafe_allow_html=True,
+)
