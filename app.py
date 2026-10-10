@@ -25,19 +25,32 @@ if not api_key:
 # Initialisation du client OpenAI
 client = OpenAI(api_key=api_key)
 
-# Instructions système (System Prompt)
+# Instructions système (System Prompt) enrichies avec l'utilisation de GeoGebra
 SYSTEM_PROMPT = """
 Tu agis en tant qu'expert pédagogique en mathématiques et tuteur socratique pour le programme francophone du Manitoba (au Collège Louis-Riel, cours IMAP20S / 10e année). 
 Ton rôle est d'aider l'élève à progresser en trigonométrie et dans les concepts de ce niveau en t'appuyant sur les programmes officiels d'Éducation Manitoba.
 
-[MODULE ACTIF : TRIGONOMÉTRIE DU TRIANGLE RECTANGLE]
-- Concepts clés : Théorème de Pythagore (a² + b² = c²), rapports trigonométriques de base (Sinus, Cosinus, Tangente / SOH-CAH-TOA), et applications (angles d'élévation et de dépression).
+[MODULE ACTIF : TRIGONOMÉTRIE DU TRIANGLE RECTANGLE ET GÉOMÉTRIE]
+- Concepts clés : Théorème de Pythagore (a² + b² = c²), rapports trigonométriques de base (Sinus, Cosinus, Tangente / SOH-CAH-TOA), pentes, droites et applications (angles d'élévation et de dépression).
 - Pédagogie et Rétroaction socratique :
   1. Ne donne jamais la réponse finale directement à l'élève.
   2. Guide-le étape par étape avec des questions stimulantes : aide-le à identifier ce qu'on cherche, à choisir le bon rapport ou théorème, à poser l'équation, puis à isoler l'inconnue.
-  3. Intègre les processus mathématiques du Manitoba (Visualisation [V], Résolution de problèmes [RP], Raisonnement [R]).
+  3. **Visualisation GeoGebra [V]** : Invite régulièrement l'élève à utiliser l'outil GeoGebra intégré dans l'application ou à tracer le triangle / le graphique pour visualiser les longueurs, les angles, ou la pente avant de faire les calculs.
   4. Sois chaleureux, encourageant, clair, pédagogue et réponds toujours en français.
 """
+
+# --- BARRE LATÉRALE (SIDEBAR) AVEC GEOGEBRA ---
+with st.sidebar:
+    st.header("📐 Espace Visuel GeoGebra")
+    st.write("Besoin de tracer un triangle ou de vérifier une pente ? Utilise l'outil ci-dessous ou ouvre GeoGebra en grand.")
+    
+    # Lien direct vers GeoGebra
+    st.markdown("[🌐 Ouvrir GeoGebra dans un nouvel onglet](https://www.geogebra.org/geometry)", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Option pour afficher un outil GeoGebra directement dans la page (Mode compact)
+    show_geogebra = st.checkbox("Afficher la calculatrice graphique GeoGebra", value=False)
 
 # Initialisation de l'historique des messages
 if "messages" not in st.session_state:
@@ -45,9 +58,16 @@ if "messages" not in st.session_state:
         {"role": "system", "content": SYSTEM_PROMPT},
         {
             "role": "assistant",
-            "content": "Bonjour Toutou ! Je suis ton tuteur socratique personnel pour tes maths au Collège Louis-Riel. Aujourd'hui, nous allons travailler sur la **trigonométrie**. Veux-tu qu'on commence par un problème sur les rapports trigonométriques (SOH-CAH-TOA), le théorème de Pythagore, ou sur les angles d'élévation ?",
+            "content": "Bonjour Toutou ! Je suis ton tuteur socratique personnel pour tes maths au Collège Louis-Riel. Aujourd'hui, nous allons travailler sur la **trigonométrie** et la géométrie. Tu peux utiliser le panneau GeoGebra dans le menu latéral si tu as besoin de tracer des figures. Veux-tu qu'on commence par un problème sur les rapports trigonométriques (SOH-CAH-TOA) ou sur le théorème de Pythagore ?",
         },
     ]
+
+# Si l'option GeoGebra est activée par l'élève, on l'affiche proprement au-dessus ou à côté du chat
+if show_geogebra:
+    st.subheader("Interactive - Outil Géométrie / Graphique")
+    # Intégration de l'iframe GeoGebra officiel (Géométrie / Classique)
+    st.components.v1.iframe("https://www.geogebra.org/geometry?embed", height=450, scrolling=True)
+    st.markdown("---")
 
 # Affichage de l'historique
 for message in st.session_state.messages:
