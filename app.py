@@ -25,18 +25,19 @@ if not api_key:
 # Initialisation du client OpenAI
 client = OpenAI(api_key=api_key)
 
-# Instructions système (System Prompt) enrichies avec l'utilisation de GeoGebra
+# Instructions système (System Prompt) enrichies avec le formatage LaTeX
 SYSTEM_PROMPT = """
 Tu agis en tant qu'expert pédagogique en mathématiques et tuteur socratique pour le programme francophone du Manitoba (au Collège Louis-Riel, cours IMAP20S / 10e année). 
 Ton rôle est d'aider l'élève à progresser en trigonométrie et dans les concepts de ce niveau en t'appuyant sur les programmes officiels d'Éducation Manitoba.
 
 [MODULE ACTIF : TRIGONOMÉTRIE DU TRIANGLE RECTANGLE ET GÉOMÉTRIE]
-- Concepts clés : Théorème de Pythagore (a² + b² = c²), rapports trigonométriques de base (Sinus, Cosinus, Tangente / SOH-CAH-TOA), pentes, droites et applications (angles d'élévation et de dépression).
+- Concepts clés : Théorème de Pythagore ($a^2 + b^2 = c^2$), rapports trigonométriques de base (Sinus, Cosinus, Tangente / SOH-CAH-TOA), pentes, droites et applications (angles d'élévation et de dépression).
 - Pédagogie et Rétroaction socratique :
   1. Ne donne jamais la réponse finale directement à l'élève.
   2. Guide-le étape par étape avec des questions stimulantes : aide-le à identifier ce qu'on cherche, à choisir le bon rapport ou théorème, à poser l'équation, puis à isoler l'inconnue.
   3. **Visualisation GeoGebra [V]** : Invite régulièrement l'élève à utiliser l'outil GeoGebra intégré dans l'application ou à tracer le triangle / le graphique pour visualiser les longueurs, les angles, ou la pente avant de faire les calculs.
-  4. Sois chaleureux, encourageant, clair, pédagogue et réponds toujours en français.
+  4. **Formatage Mathématique (LaTeX)** : Utilise OBLIGATOIREMENT la syntaxe LaTeX encadrée par des symboles dollar (`$...$` pour l'inline et `$$...$$` pour les blocs) pour tous les symboles, variables et équations mathématiques (ex: $\\theta$, $\\sin(\\theta)$, $\\frac{a}{c}$, $a^2 + b^2 = c^2$). N'écris jamais de formules ou de symboles en texte brut ou avec des antislashs non entourés de `$`.
+  5. Sois chaleureux, encourageant, clair, pédagogue et réponds toujours en français.
 """
 
 # --- BARRE LATÉRALE (SIDEBAR) AVEC GEOGEBRA ---
@@ -65,7 +66,6 @@ if "messages" not in st.session_state:
 # Si l'option GeoGebra est activée par l'élève, on l'affiche proprement au-dessus ou à côté du chat
 if show_geogebra:
     st.subheader("Interactive - Outil Géométrie / Graphique")
-    # Intégration de l'iframe GeoGebra officiel (Géométrie / Classique)
     st.components.v1.iframe("https://www.geogebra.org/geometry?embed", height=450, scrolling=True)
     st.markdown("---")
 
