@@ -4,13 +4,13 @@ from openai import OpenAI
 
 # Configuration de la page Streamlit
 st.set_page_config(
-    page_title="Tuteur socratique - Toutou", page_icon="🌍", layout="centered"
+    page_title="Tuteur socratique - Toutou", page_icon="🇨🇦", layout="centered"
 )
 
 # Titre personnalisé pour Takwa / Toutou
 st.title("🎓 Tuteur socratique pour ❤️ ❤️Toutou❤️ ❤️")
 st.caption(
-    "Ton assistant personnel pour le Collège Louis-Riel (Mathématiques & Sciences humaines)"
+    "Ton assistant personnel pour le Collège Louis-Riel (Mathématiques, Géographie & Histoire du Canada)"
 )
 
 # Récupération de la clé API OpenAI depuis les secrets Streamlit
@@ -33,6 +33,7 @@ with st.sidebar:
         [
             "Mathématiques (IMAP20S)",
             "Sciences humaines / Géographie (10e année)",
+            "Histoire du Canada (11e année)",
         ],
     )
     
@@ -43,11 +44,18 @@ with st.sidebar:
         st.write("Besoin de tracer un triangle ou de vérifier une pente ? Utilise l'outil ci-dessous.")
         st.markdown("[🌐 Ouvrir GeoGebra dans un nouvel onglet](https://www.geogebra.org/geometry)", unsafe_allow_html=True)
         show_tool = st.checkbox("Afficher la calculatrice graphique GeoGebra", value=False)
-    else:
+    elif matiere == "Sciences humaines / Géographie (10e année)":
         st.header("🗺️ Ressources Géographiques")
         st.write("Explore les cartes, les biomes et les enjeux mondiaux.")
         st.markdown("[🌐 Atlas du Canada](https://atlas.gc.ca/)", unsafe_allow_html=True)
         st.markdown("[🌐 Google Earth](https://earth.google.com/)", unsafe_allow_html=True)
+        show_tool = False
+    else:
+        st.header("📜 Ressources Historiques")
+        st.write("Explore l'histoire canadienne, la pensée historique et les sources primaires.")
+        st.markdown("[🌐 Projet de la pensée historique](https://historicalthinking.ca/fr)", unsafe_allow_html=True)
+        st.markdown("[🌐 Musée virtuel de la Nouvelle-France](https://www.historymuseum.ca/virtual-museum-of-new-france/)", unsafe_allow_html=True)
+        st.markdown("[🌐 Centre du patrimoine (SHSB)](https://shsb.mb.ca/)", unsafe_allow_html=True)
         show_tool = False
 
 # Instructions système pour les Mathématiques
@@ -80,6 +88,32 @@ Ton rôle est d'aider l'élève à explorer la littératie géographique, les en
   5. Sois chaleureux, encourageant, clair, pédagogue et réponds toujours en français.
 """
 
+# Instructions système pour l'Histoire du Canada (11e année)
+SYSTEM_PROMPT_HISTO = """
+Tu agis en tant qu'expert pédagogique en histoire et tuteur socratique pour le programme francophone du Manitoba (au Collège Louis-Riel, cours Histoire du Canada 11e année / Document de mise en œuvre 2012).
+Ton rôle est d'aider l'élève à développer sa pensée historique, sa littératie critique et sa compréhension de l'histoire canadienne en t'appuyant sur les programmes officiels d'Éducation Manitoba.
+
+[MODULE ACTIF : HISTOIRE DU CANADA - 11e ANNÉE]
+- Question centrale directrice : "Comment le Canada d'aujourd'hui a-t-il été façonné par son histoire ?"
+- Les 6 concepts fondamentaux de la pensée historique à mobiliser[cite: 424, 471] :
+  1. Établir l'importance historique [IH] (impact à long terme, caractère révélateur).
+  2. Utiliser des preuves découlant de sources primaires [P] (analyser les traces, contextualiser).
+  3. Dégager la continuité et le changement [C+C] (évolution, permanences, progrès et déclin).
+  4. Analyser les causes et les conséquences [CC] (motivations humaines, contraintes, effets inattendus).
+  5. Adopter une perspective historique [PH] (comprendre le contexte d'époque, éviter le présentisme).
+  6. Considérer la dimension éthique de l'histoire [DÉ] (jugements éclairés et répercussions morales).
+- Les 5 regroupements chronologiques du cours[cite: 447] :
+  1. Les Premiers Peuples et la Nouvelle-France (avant 1763)
+  2. L'Amérique du Nord britannique (1763-1867)
+  3. Devenir une nation souveraine (1867-1931)
+  4. Réalisations et défis (1931-1982)
+  5. Définir le Canada contemporain (1982 à aujourd'hui)
+- Pédagogie et Rétroaction socratique :
+  1. Ne donne jamais la réponse finale directement. Guide l'élève pas à pas avec des questions stimulantes.
+  2. Encourage l'élève à analyser les sources primaires, à examiner la structure tripartite de l'histoire canadienne (autochtone, francophone, anglophone)[cite: 435] et à confronter les points de vue.
+  3. Sois chaleureux, encourageant, clair, pédagogue et réponds toujours en français.
+"""
+
 # Gestion du changement de matière dans la session state
 if "current_matiere" not in st.session_state:
     st.session_state.current_matiere = matiere
@@ -94,12 +128,20 @@ if st.session_state.current_matiere != matiere:
                 "content": "Bonjour Toutou ! Je suis ton tuteur socratique pour tes maths au Collège Louis-Riel. Prête pour un nouveau défi en trigonométrie ou géométrie ?",
             },
         ]
-    else:
+    elif matiere == "Sciences humaines / Géographie (10e année)":
         st.session_state.messages = [
             {"role": "system", "content": SYSTEM_PROMPT_GEO},
             {
                 "role": "assistant",
                 "content": "Bonjour Toutou ! Bienvenue dans ton espace de Sciences humaines et Géographie (10e année) au Collège Louis-Riel. Es-tu prête à explorer les grands enjeux géographiques de notre planète, la cartographie ou les biomes ?",
+            },
+        ]
+    else:
+        st.session_state.messages = [
+            {"role": "system", "content": SYSTEM_PROMPT_HISTO},
+            {
+                "role": "assistant",
+                "content": "Bonjour Toutou ! Bienvenue dans ton espace d'Histoire du Canada (11e année) au Collège Louis-Riel. Es-tu prête à explorer l'histoire de notre pays à travers la pensée historique, de la Nouvelle-France jusqu'à nos jours ?",
             },
         ]
 
@@ -109,14 +151,18 @@ if "messages" not in st.session_state:
         {"role": "system", "content": SYSTEM_PROMPT_MATH},
         {
             "role": "assistant",
-            "content": "Bonjour Toutou ! Je suis ton tuteur socratique personnel pour tes cours au Collège Louis-Riel. Tu peux choisir ta matière dans le menu latéral (Mathématiques ou Géographie). Par quoi veux-tu commencer ?",
+            "content": "Bonjour Toutou ! Je suis ton tuteur socratique personnel pour tes cours au Collège Louis-Riel. Tu peux choisir ta matière dans le menu latéral (Mathématiques, Géographie ou Histoire du Canada). Par quoi veux-tu commencer ?",
         },
     ]
 else:
     # Mettre à jour dynamiquement le prompt système selon la matière active
-    st.session_state.messages[0]["content"] = (
-        SYSTEM_PROMPT_MATH if matiere == "Mathématiques (IMAP20S)" else SYSTEM_PROMPT_GEO
-    )
+    if matiere == "Mathématiques (IMAP20S)":
+        current_prompt = SYSTEM_PROMPT_MATH
+    elif matiere == "Sciences humaines / Géographie (10e année)":
+        current_prompt = SYSTEM_PROMPT_GEO
+    else:
+        current_prompt = SYSTEM_PROMPT_HISTO
+    st.session_state.messages[0]["content"] = current_prompt
 
 # Affichage de l'outil GeoGebra si activé en maths
 if show_tool and matiere == "Mathématiques (IMAP20S)":
