@@ -25,7 +25,7 @@ if not api_key:
 # Initialisation du client OpenAI
 client = OpenAI(api_key=api_key)
 
-# --- BARRE LATÉRALE (SIDEBAR) AVEC SÉLECTEUR DE MATIÈRE ---
+# --- BARRE LATÉRALE (SIDEBAR) AVEC SÉLECTEUR DE MATIÈRE & MICROPHONE ---
 with st.sidebar:
     st.header("🎯 Choisi ta matière")
     matiere = st.selectbox(
@@ -36,6 +36,13 @@ with st.sidebar:
             "Histoire du Canada (11e année)",
         ],
     )
+    
+    st.markdown("---")
+    
+    # Section Microphone pour Toutou
+    st.header("🎤 Mode Vocal")
+    st.write("Fainéante de taper ? Clique sur le micro pour parler à ton tuteur :")
+    audio_value = st.audio_input("Enregistre ta voix")
     
     st.markdown("---")
     
@@ -176,8 +183,28 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# Zone de saisie utilisateur
-if user_input := st.chat_input("Pose ta question ou réponds ici..."):
+# Gestion de l'entrée utilisateur : soit par le micro (sidebar), soit par le champ texte
+user_input = None
+
+if audio_value is not None:
+    with st.spinner("Transcription de ta voix en cours..."):
+        try:
+            # Appel à l'API Whisper d'OpenAI pour transcrire l'audio enregistré
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_value
+            )
+            user_input = transcript.text
+        except Exception as e:
+            st.error(f"Erreur lors de la transcription audio : {e}")
+
+# Saisie texte classique en bas
+chat_input = st.chat_input("Pose ta question, réponds ici ou utilise le micro...")
+if chat_input:
+    user_input = chat_input
+
+# Si un message a été capté (par texte ou par micro)
+if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
